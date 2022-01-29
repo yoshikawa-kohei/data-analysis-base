@@ -1,10 +1,11 @@
-from typing import List, Optional, Type, Tuple
+from typing import List, Optional, Type, Tuple, Any
 import luigi
 from pathlib import Path
 import pandas as pd
 import pickle
 
-from .data import BuildDataset
+from .datamanager import BuildDataset
+from .features import BuildFeatures
 
 
 class MainWorkflow(luigi.Task):
@@ -12,17 +13,28 @@ class MainWorkflow(luigi.Task):
     Workflow
     """
 
-    def requires(self) -> Optional[Type[luigi.Task]]:
-        return BuildDataset()
+    def requires(self) -> Any:
+        return {
+            "feat1": BuildFeatures(
+                task_dataset=BuildDataset(),
+                param_model_name="Standardization",
+                param_column_names=["sepal length (cm)"],
+            ),
+            "feat2": BuildFeatures(
+                task_dataset=BuildDataset(),
+                param_model_name="Standardization",
+                param_column_names=["sepal width (cm)"],
+            ),
+        }
 
     def output(self) -> luigi.LocalTarget:
-        __filename = self.__class__.__name__ + ".pkl"
-        __path = Path(__file__).parent / "../resources" / __filename
-        return luigi.LocalTarget(path=__path, format=luigi.format.Nop)
+        filename = self.__class__.__name__ + ".pkl"
+        _path = Path(__file__).parent / "../resources" / filename
+        return luigi.LocalTarget(path=_path, format=luigi.format.Nop)
 
     def run(self) -> None:
 
-        with self.input().open("r") as input:
-            X: pd.DataFrame = pickle.load(input)
-            with self.output().open("w") as output:
-                output.write(pickle.dumps(X, protocol=4))
+        with self.input()["feat1"].open("rb") as input:
+            dataset: pd.DataFrame = pickle.load(input)
+            with self.output().open("wb") as output:
+                pickle.dump(dataset, output, protocol=4)
