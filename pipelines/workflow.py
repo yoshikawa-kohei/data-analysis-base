@@ -1,40 +1,28 @@
-from typing import List, Optional, Type, Tuple, Any
-import luigi
-from pathlib import Path
-import pandas as pd
-import pickle
-
-from .datamanager import BuildDataset
-from .features import BuildFeatures
+from typing import Any
+import gokart
+from .datamanager.task import BuildTrainDataset
+from .features.task import TrainFeatureModel, ApplyFeatureModel
 
 
-class MainWorkflow(luigi.Task):
+class TrainWorkflow(gokart.TaskOnKart):
     """
     Workflow
     """
 
-    def requires(self) -> Any:
-        return {
-            "feat1": BuildFeatures(
-                task_dataset=BuildDataset(),
-                param_model_name="Standardization",
-                param_column_names=["sepal length (cm)"],
-            ),
-            "feat2": BuildFeatures(
-                task_dataset=BuildDataset(),
-                param_model_name="Standardization",
-                param_column_names=["sepal width (cm)"],
-            ),
-        }
+    done = False
 
-    def output(self) -> luigi.LocalTarget:
-        filename = self.__class__.__name__ + ".pkl"
-        _path = Path(__file__).parent / "../resources" / filename
-        return luigi.LocalTarget(path=_path, format=luigi.format.Nop)
+    def requires(self) -> Any:
+        dataset: gokart.TaskOnKart = BuildTrainDataset()
+        feature_model: gokart.TaskOnKart = TrainFeatureModel(task_dataset=dataset)
+        feature: gokart.TaskOnKart = ApplyFeatureModel(
+            task_dataset=dataset, task_feature_model=feature_model
+        )
+
+        return feature
 
     def run(self) -> None:
+        print("INFO: Running wrokflow...")
+        self.done = True
 
-        with self.input()["feat1"].open("rb") as input:
-            dataset: pd.DataFrame = pickle.load(input)
-            with self.output().open("wb") as output:
-                pickle.dump(dataset, output, protocol=4)
+    def complete(self) -> bool:
+        return self.done

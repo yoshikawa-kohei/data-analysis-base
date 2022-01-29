@@ -1,31 +1,32 @@
-from typing import List, Optional, Type, Tuple, Any
-import luigi
-from pathlib import Path
+from typing import Any
+import gokart
 import pandas as pd
-import pickle
-
-from .core._datamanager import _build_dataset
-
-from ..utils import RESOURCES_PATH
+from .core._datamanager import _build_train_dataset, _build_test_dataset
 
 
-class BuildDataset(luigi.Task):
+class BuildTrainDataset(gokart.TaskOnKart):
     """
-    Building dataset
+    Building training dataset
     """
 
-    def requires(self) -> Optional[Type[luigi.Task]]:
+    def requires(self) -> Any:
         return None
-
-    def output(self) -> luigi.LocalTarget:
-        filename = self.__class__.__name__ + ".pkl"
-        return luigi.LocalTarget(
-            path=RESOURCES_PATH / filename, format=luigi.format.Nop
-        )
 
     def run(self) -> None:
 
-        dataset: pd.DataFrame = _build_dataset()
+        dataset: pd.DataFrame = _build_train_dataset()
+        self.dump(dataset)
 
-        with self.output().open("wb") as output:
-            pickle.dump(dataset, output, protocol=4)
+
+class BuildTestDataset(gokart.TaskOnKart):
+    """
+    Building test dataset
+    """
+
+    def requires(self) -> Any:
+        return None
+
+    def run(self) -> None:
+
+        dataset: pd.DataFrame = _build_test_dataset()
+        self.dump(dataset)

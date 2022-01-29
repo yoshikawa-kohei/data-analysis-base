@@ -1,5 +1,5 @@
 import luigi
 
-from pipelines.workflow import MainWorkflow
+from pipelines.workflow import TrainWorkflow
 
-luigi.run(["MainWorkflow", "--workers", "1", "--local-scheduler"])
+luigi.run(["TrainWorkflow", "--workers", "1", "--local-scheduler"])
