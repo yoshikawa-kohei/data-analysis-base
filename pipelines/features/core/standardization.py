@@ -1,9 +1,9 @@
 from typing import Any, Dict, List
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from .base import FeatureModelBase
 
-
-class Standardization:
+class Standardization(FeatureModelBase):
     def __init__(
         self,
         column_names: List[str],
