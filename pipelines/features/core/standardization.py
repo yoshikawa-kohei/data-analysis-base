@@ -1,4 +1,3 @@
-
 from typing import Any, Dict, List
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -6,7 +5,11 @@ from sklearn.preprocessing import StandardScaler
 
 class Standardization:
     def __init__(
-        self, copy: bool = True, with_mean: bool = True, with_std: bool = True
+        self,
+        column_names: List[str],
+        copy: bool = True,
+        with_mean: bool = True,
+        with_std: bool = True,
     ) -> None:
         self.__settings: Dict[str, Any] = {
             "copy": copy,
@@ -15,6 +18,7 @@ class Standardization:
         }
         self.__engine: Any = StandardScaler(**self.__settings)
         self.__engine_name: str = "Standardization"
+        self.__column_names: List[str] = column_names
 
     @property
     def settings(self) -> Dict[str, Any]:
@@ -24,8 +28,7 @@ class Standardization:
     def engine_name(self) -> str:
         return self.__engine_name
 
-    def fit(self, data: pd.DataFrame, column_names: List[str]) -> Any:
-        self.__column_names = column_names
+    def fit(self, data: pd.DataFrame) -> Any:
         self.__engine.fit(data[self.__column_names])
         return self
 

@@ -6,7 +6,7 @@ from .core._features import _train_feature_model
 
 
 class TrainFeatureModel(gokart.TaskOnKart):
-    task_dataset = luigi.TaskParameter()
+    task_dataset = gokart.TaskInstanceParameter()
 
     def requires(self) -> Any:
         return self.task_dataset
@@ -19,8 +19,8 @@ class TrainFeatureModel(gokart.TaskOnKart):
 
 
 class ApplyFeatureModel(gokart.TaskOnKart):
-    task_dataset = luigi.TaskParameter()
-    task_feature_model = luigi.TaskParameter()
+    task_dataset = gokart.TaskInstanceParameter()
+    task_feature_model = gokart.TaskInstanceParameter()
 
     def requires(self) -> Any:
         return {"dataset": self.task_dataset, "model": self.task_feature_model}

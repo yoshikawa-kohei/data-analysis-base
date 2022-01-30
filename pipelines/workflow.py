@@ -1,6 +1,7 @@
-from typing import Any
+from typing import Any, List, Type
 import gokart
-from .datamanager.task import BuildTrainDataset
+import luigi
+from .datamanager.task import BuildTrainDataset, BuildTestDataset
 from .features.task import TrainFeatureModel, ApplyFeatureModel
 
 
@@ -23,6 +24,34 @@ class TrainWorkflow(gokart.TaskOnKart):
     def run(self) -> None:
         print("INFO: Running wrokflow...")
         self.done = True
+        self.dump(self.load())
 
     def complete(self) -> bool:
         return self.done
+
+
+class TestWorkflow(gokart.TaskOnKart):
+    """
+    Workflow
+    """
+
+    done = False
+
+    def requires(self) -> Any:
+        train_dataset: gokart.TaskOnKart = BuildTrainDataset()
+        test_dataset: gokart.TaskOnKart = BuildTestDataset()
+        feature_model: gokart.TaskOnKart = TrainFeatureModel(task_dataset=train_dataset)
+        feature: gokart.TaskOnKart = ApplyFeatureModel(
+            task_dataset=test_dataset, task_feature_model=feature_model
+        )
+
+        return feature
+
+    def run(self) -> None:
+        print("INFO: Running wrokflow...")
+        self.done = True
+        self.dump(self.load())
+
+    def complete(self) -> bool:
+        return self.done
+
