@@ -1,7 +1,7 @@
 from typing import Any, List, Type
 import gokart
 import luigi
-from .datamanager.task import BuildTrainDataset, BuildTestDataset
+from .dataset.task import BuildTrainDataset, BuildTestDataset
 from .features.task import TrainFeatureModel, ApplyFeatureModel
 
 

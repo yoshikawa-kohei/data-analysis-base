@@ -1,19 +1,17 @@
-import imp
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from abc import abstractmethod, ABCMeta
 
+
 class FeatureModelBase(metaclass=ABCMeta):
-    def __init__(
-        self,
-    ) -> None:
-        self.__engine: Any
-        self.__engine_name: str
+    def __init__(self, model: Optional[Any] = None, name: str = "") -> None:
+        self._model: Any = model
+        self._name: str = name
 
     @property
-    def engine_name(self) -> str:
-        return self.__engine_name
+    def name(self) -> str:
+        return self._name
 
     @abstractmethod
     def fit(self, data: pd.DataFrame) -> Any:

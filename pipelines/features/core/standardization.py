@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 from .base import FeatureModelBase
 
+
 class Standardization(FeatureModelBase):
     def __init__(
         self,
@@ -11,29 +12,24 @@ class Standardization(FeatureModelBase):
         with_mean: bool = True,
         with_std: bool = True,
     ) -> None:
-        self.__settings: Dict[str, Any] = {
+        self._settings: Dict[str, Any] = {
             "copy": copy,
             "with_mean": with_mean,
             "with_std": with_std,
         }
-        self.__engine: Any = StandardScaler(**self.__settings)
-        self.__engine_name: str = "Standardization"
-        self.__column_names: List[str] = column_names
+        super().__init__(model=StandardScaler(**self._settings), name="Standardization")
+        self._column_names: List[str] = column_names
 
     @property
     def settings(self) -> Dict[str, Any]:
-        return self.__settings
-
-    @property
-    def engine_name(self) -> str:
-        return self.__engine_name
+        return self._settings
 
     def fit(self, data: pd.DataFrame) -> Any:
-        self.__engine.fit(data[self.__column_names])
+        self._model.fit(data[self._column_names])
         return self
 
     def apply(self, data: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(
-            data=self.__engine.transform(data[self.__column_names]),
-            columns=self.__column_names,
+            data=self._model.transform(data[self._column_names]),
+            columns=self._column_names,
         )
