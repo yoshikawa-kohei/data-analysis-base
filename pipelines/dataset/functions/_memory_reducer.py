@@ -31,7 +31,7 @@ class MemoryReducer:
             else:
                 yield (dtype, np.finfo(dtype))
 
-    def reduce(self, df: pd.DataFrame, verbose: bool = True):
+    def reduce(self, df: pd.DataFrame, verbose: bool = True) -> pd.DataFrame:
         if verbose:
             print("====== Start Memory Reducer ======")
 
@@ -43,7 +43,7 @@ class MemoryReducer:
             outputs = executer.map(
                 partial(self._reduce, verbose=verbose), [df[col] for col in columns],
             )
-        result = pd.concat([result for result in outputs], axis=1)
+        result: pd.DataFrame = pd.concat([result for result in outputs], axis=1)
 
         end_memory = result.memory_usage().sum() / 1024 ** 2
 

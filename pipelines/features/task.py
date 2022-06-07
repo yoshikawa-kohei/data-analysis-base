@@ -1,11 +1,14 @@
 from typing import Any
-import luigi
+
 import gokart
+import luigi
 import pandas as pd
-from .core._features import _train_feature_model
+
+from .functions import FeatureExtractor
+from .functions.models import BaseFeature, Standardization
 
 
-class TrainFeatureModel(gokart.TaskOnKart):
+class FitFeatureModel(gokart.TaskOnKart):
     task_dataset = gokart.TaskInstanceParameter()
 
     def requires(self) -> Any:
@@ -13,17 +16,28 @@ class TrainFeatureModel(gokart.TaskOnKart):
 
     def run(self) -> None:
         dataset: pd.DataFrame = self.load()
-        build_features_model = _train_feature_model(dataset)
 
-        self.dump(build_features_model)
+        extractor = FeatureExtractor(models=self._feature_models())
+        extractor.fit(dataset)
+
+        self.dump(extractor)
+
+    def _feature_models(self) -> list[BaseFeature]:
+        # child models
+        models: list[BaseFeature] = [
+            Standardization(column_names=["sepal width (cm)"]),
+            Standardization(column_names=["sepal length (cm)"]),
+        ]
+
+        return models
 
 
 class ApplyFeatureModel(gokart.TaskOnKart):
     task_dataset = gokart.TaskInstanceParameter()
-    task_feature_model = gokart.TaskInstanceParameter()
+    task_feature_extractor = gokart.TaskInstanceParameter()
 
     def requires(self) -> Any:
-        return {"dataset": self.task_dataset, "model": self.task_feature_model}
+        return {"dataset": self.task_dataset, "model": self.task_feature_extractor}
 
     def run(self) -> None:
         dataset: pd.DataFrame = self.load("dataset")
